@@ -92,7 +92,6 @@ if __name__ == '__main__':
         tel = input("enter phone number: ")
         insert_contact(name, tel)
     elif choice == '2':
-        # Здесь мы вызываем функцию импорта
         insert_from_csv('contacts.csv')
     elif choice == '3':
         s = input("enter name to search: ")
@@ -105,4 +104,3 @@ if __name__ == '__main__':
         name = input("enter name to delete: ")
         delete_contact(name)
 
-        
