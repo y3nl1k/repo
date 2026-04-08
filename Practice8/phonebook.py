@@ -1,101 +1,108 @@
 import psycopg2
-import csv
 from config import load_config
 
-def insert_contact(first_name, phone_number):
-    sql = "INSERT INTO phonebook(first_name, phone_number) VALUES(%s, %s)"
+
+def find_contacts(srch):
+    sql = "SELECT * FROM get_contacts_by_pattern(%s)"
     config = load_config()
     try:
         with psycopg2.connect(**config) as conn:
             with conn.cursor() as cur:
-                cur.execute(sql, (first_name, phone_number))
-                conn.commit()
-                print(f"{first_name} added")
+                cur.execute(sql, (srch,))
+                rows = cur.fetchall()
+                if rows:
+                    for row in rows:
+                        print(f"name: {row[0]}, num: {row[1]}")
+                else:
+                    print("not found")
     except Exception as e:
         print(f"error with {e}")
 
-def insert_from_csv(filename):
-    
+def upsrt(upsname, upsphone):
+    sql = "CALL upsert_contact(%s, %s)"
     config = load_config()
     try:
         with psycopg2.connect(**config) as conn:
             with conn.cursor() as cur:
-                with open(filename, 'r', encoding='utf-8') as f:
-                    reader = csv.reader(f)
-                    for row in reader:
-                        cur.execute(
-                            "INSERT INTO phonebook(first_name, phone_number) VALUES(%s, %s) ON CONFLICT DO NOTHING",
-                            (row[0], row[1])
-                        )
+                cur.execute(sql, (upsname, upsphone))
                 conn.commit()
-                print("inserted")
+                print("upserted")
     except Exception as e:
-        print(f"CSV error: {e}")
+        print(f"error: {e}")
 
 
-def update_contact(name, new_phone):
-    sql = "UPDATE phonebook SET phone_number = %s WHERE first_name = %s"
+def bulk(listname, listphone):
+    sql = "CALL insert_many_contacts(%s, %s)"
     config = load_config()
     try:
         with psycopg2.connect(**config) as conn:
             with conn.cursor() as cur:
-                cur.execute(sql, (new_phone, name))
+                cur.execute(sql, (listname, listphone))
                 conn.commit()
-                print(f"number for {name} is changed to {new_phone}!")
+                print(f"list of contacts added")
     except Exception as e:
-        print(f"upd error {e}")
+        print(f"error {e}")
     
-def find_contacts(search_term):
-    sql = "SELECT first_name, phone_number FROM phonebook WHERE first_name LIKE %s"
+def pgnt(lim, offs):
+    sql = "SELECT * FROM get_contacts_paginated(%s, %s)"
     config = load_config()
     try:
         with psycopg2.connect(**config) as conn:
 
             with conn.cursor() as cur:
-                cur.execute(sql, (search_term,))
+                cur.execute(sql, (lim, offs))
                 rows = cur.fetchall()
-                print(f"found: {len(rows)}")
+            
                 for row in rows:
                     print(f"name: {row[0]}, num: {row[1]}")
     except Exception as e:
         print(f"finding error: {e}")
 
-def delete_contact(name):
-    sql = "DELETE FROM phonebook WHERE first_name = %s"
+def delete_contact(contact):
+    sql = "CALL delete_contact(%s)"
     config = load_config()
     try:
         with psycopg2.connect(**config) as conn:
             with conn.cursor() as cur:
-                cur.execute(sql, (name,))
+                cur.execute(sql, (contact,))
                 conn.commit()
-                print(f"contact {name} is deleted.")
+                print(f"contact {contact} is deleted.")
     except Exception as e:
         print(f"del error: {e}")
 
 if __name__ == '__main__':
-    print("\n--- phonebook application ---")
-    print("1. add new contact")
-    print("2. import contacts from CSV")
-    print("3. search contact")
-    print("4. update contact phone")
-    print("5. delete contact")
-    
-    choice = input("\nchoose an option (1-5): ")
-    
-    if choice == '1':
-        name = input("enter first name: ")
-        tel = input("enter phone number: ")
-        insert_contact(name, tel)
-    elif choice == '2':
-        insert_from_csv('contacts.csv')
-    elif choice == '3':
-        s = input("enter name to search: ")
-        find_contacts(s)
-    elif choice == '4':
-        name = input("enter contact name to update: ")
-        new_tel = input("enter new phone number: ")
-        update_contact(name, new_tel)
-    elif choice == '5':
-        name = input("enter name to delete: ")
-        delete_contact(name)
+
+    while True:
+
+        print("\n--- phonebook application ---")
+        print("1. search")
+        print("2. update or insert a contact")
+        print("3. insert a list of contacts")
+        print("4. view paginated data")
+        print("5. delete contact")
+        print("any other symbol to leave")
+        
+        choice = input("\nchoose an option (1-5): ")
+        
+        if choice == '1':
+            s = input("enter name or number part: ")
+        
+            find_contacts(s)
+        elif choice == '2':
+            name=input("enter name: ")
+            pho=input("enter phone number: ")
+            upsrt(name, pho)
+        elif choice == '3':
+            names = input("enter names: ").split()
+            phones = input("enter numbers: ").split()
+            bulk(names, phones)
+        elif choice == '4':
+            l = int(input("enter num of contacts in each page: "))
+            o = int(input("enter the num where u eant to start at: "))
+            pgnt(l, o)
+        elif choice == '5':
+            data = input("enter name or number to delete: ")
+            delete_contact(data)
+        else:
+            break
 
