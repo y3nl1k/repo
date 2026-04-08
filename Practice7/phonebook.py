@@ -32,12 +32,6 @@ def insert_from_csv(filename):
     except Exception as e:
         print(f"CSV error: {e}")
 
-if __name__ == '__main__':
-     
-    
-    name = input("input name: ")
-    phone = input("input number: ")
-    insert_contact(name, phone)
 
 def update_contact(name, new_phone):
     sql = "UPDATE phonebook SET phone_number = %s WHERE first_name = %s"
@@ -56,8 +50,9 @@ def find_contacts(search_term):
     config = load_config()
     try:
         with psycopg2.connect(**config) as conn:
+
             with conn.cursor() as cur:
-                cur.execute(sql, (f'%{search_term}%',))
+                cur.execute(sql, (search_term,))
                 rows = cur.fetchall()
                 print(f"found: {len(rows)}")
                 for row in rows:
