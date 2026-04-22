@@ -31,7 +31,7 @@ direction = "r"
 walls = []
 
 def generate_food():
-    """Генерирует еду так, чтобы она не попала на змейку или стену"""
+    
     while True:
         new_food = [random.randrange(0, WIDTH // 10) * 10, 
                     random.randrange(0, HEIGHT // 10) * 10]
