@@ -37,3 +37,9 @@ BEGIN
     WHERE first_name = p_data OR phone_number = p_data;
 END;
 $$;
+
+CALL insert_many_contacts('{"name1", "name2", "name3"}', '{"12345", "23456", "34567"}');
+
+CALL upsert_contact('nameee', '1287654');
+
+CALL delete_contact('nameee');

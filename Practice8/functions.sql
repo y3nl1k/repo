@@ -18,3 +18,6 @@ BEGIN
     LIMIT p_limit OFFSET p_offset;
 END;
 $$ LANGUAGE plpgsql;
+
+SELECT * FROM get_contacts_paginated(10, 0);
+SELECT * FROM get_contacts_by_pattern('name');

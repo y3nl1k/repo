@@ -42,8 +42,8 @@ print(a.upper())
 
 a = "Hello, World!"
 print(a.lpwer())
-
-
+x = input("something")
+y = int(x)+2
 #removes any whitespace from the beginning or the end:
 a = " Hello, World! "
 print(a.strip()) # returns "Hello, World!"

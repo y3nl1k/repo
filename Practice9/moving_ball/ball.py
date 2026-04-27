@@ -19,7 +19,7 @@ while running:
             running = False
 
     screen.fill((255,255,255)) 
-    pygame.draw.circle(screen, (255, 0, 0), (ball_x, ball_y), ball_radius)
+    pygame.draw.circle(screen, (0, 0, 255), (ball_x, ball_y), ball_radius)
 
     if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT:
