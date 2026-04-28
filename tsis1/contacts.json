@@ -1,0 +1,23 @@
+[
+    {
+        "name": "mama",
+        "email": "mama@pochta.kz",
+        "birthday": "2006-03-12",
+        "group": "Family",
+        "phones": ["87001002030", "87775554433"]
+    },
+    {
+        "name": "Arman",
+        "email": "arman_best@mail.ru",
+        "birthday": "2005-01-01",
+        "group": "Friend",
+        "phones": ["87056667788"]
+    },
+    {
+        "name": "Tech Support",
+        "email": "support@store.kz",
+        "birthday": null,
+        "group": "Work",
+        "phones": ["123", "456"]
+    }
+]
