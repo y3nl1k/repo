@@ -1,6 +1,7 @@
 import pygame
 import random
 
+
 class Snake:
     def __init__(self, color):
         self.size = 10
@@ -10,8 +11,6 @@ class Snake:
         self.score = 0
         self.level = 1
         self.speed = 10
-        
-        
         self.shield = False
         self.speed_boost_time = 0 
 
@@ -21,14 +20,14 @@ class Snake:
         elif self.direction == "l": head[0] -= self.size
         elif self.direction == "u": head[1] -= self.size
         elif self.direction == "d": head[1] += self.size
-        
         self.body.insert(0, head) 
+
+
     def check_collision(self, width, height, obstacles):
         head = self.body[0]
-        
         if head[0] < 0 or head[0] >= width or head[1] < 0 or head[1] >= height:
             return True
-      
+    
         if head in self.body[1:]:
             return True
    
@@ -37,18 +36,14 @@ class Snake:
         return False
     
 
-    def eat(self, is_poison=False):
-        
+    def eat(self, is_poison=False):    
         if is_poison:
-           
             if len(self.body) > 2:
                 self.body.pop()
                 self.body.pop()
             else:
-           
                 return True 
         else:
-         
             pass
         return False
 
@@ -56,7 +51,6 @@ class Food:
     def __init__(self, width, height, is_poison=False):
         self.size = 10
         self.is_poison = is_poison
-       
         self.color = (200, 120, 0) if not is_poison else (139, 0, 0)
         self.pos = [random.randrange(0, width // 10) * 10, 
                     random.randrange(0, height // 10) * 10]
@@ -68,8 +62,6 @@ class Food:
             if new_pos not in obstacles and new_pos not in snake_body:
                 self.pos = new_pos
                 break
-
-
 
 class Obstacle:
     def __init__(self, snake_body, width, height, count):
