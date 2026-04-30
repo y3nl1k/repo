@@ -67,7 +67,6 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
-            
  
             if typing:
                 if event.type == pygame.KEYDOWN:
