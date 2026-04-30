@@ -24,8 +24,8 @@ saving_done = False
 game_settings = persistence.load_settings()
 
 def reset_game():
-    
-    global p1, enemies, coins, all_sprites, score, background, obstacles
+    '''default game settings'''
+    global p1, enemies, coins, all_sprites, score, background, obstacles, hp, active_pows
     p1 = Player()
     enemy = Enemy()
     enemies = pygame.sprite.Group(enemy)
@@ -33,6 +33,8 @@ def reset_game():
     obstacles = pygame.sprite.Group()
     all_sprites = pygame.sprite.Group(p1, enemy)
     score = 0
+    hp = 3  
+    active_pows = []
     background = bg()
 
 def draw_text(text, font_size, y_pos, color=(255, 255, 255)):
@@ -42,6 +44,23 @@ def draw_text(text, font_size, y_pos, color=(255, 255, 255)):
     screen_width = screen.get_width()
     text_rect = text_surf.get_rect(center=(screen_width // 2, y_pos))
     screen.blit(text_surf, text_rect)
+
+def infoset(screen, hp, active_pows):
+    '''hp, shield timer info'''
+    pygame.draw.rect(screen, (220, 0, 0), (10, 35, hp*30, 10))
+    y_offset = 60
+    current_time = pygame.time.get_ticks()
+
+    for pow in active_pows[:]:
+        timeleft = (pow["end_time"] - current_time) // 1000
+
+        if timeleft > 0:
+            font = pygame.font.SysFont("Verdana", 12)
+            powtext = font.render(f"{pow['type'].upper()}: {timeleft}s", True, (0, 0, 255))
+            screen.blit(powtext, (10, y_offset))
+            y_offset += 25
+        else:
+            active_pows.remove(pow) 
 
 reset_game()
 
@@ -64,8 +83,8 @@ while True:
 
     if current_state == STATE_MENU:
         screen.fill((50, 50, 50))
-        
-        draw_text("CRAZY RACER", 64, 150, (255, 0, 0))
+        #menu screen
+        draw_text("RACER", 64, 150, (255, 0, 0))
         draw_text("Enter your name:", 24, 250, (255, 255, 255))
         pygame.draw.rect(screen, (255, 255, 255), (100, 280, 200, 40))
         draw_text(user_name + "|", 28, 300, (0, 0, 0))
@@ -73,7 +92,7 @@ while True:
             draw_text("Press SPACE to Start", 20, 380, (0, 255, 0))
         else:
             draw_text("Type your name to unlock Start", 18, 380, (150, 150, 150))
-        draw_text("Press L for Leaderboard", 18, 420, (200, 200, 200)) # Подсказка на экране
+        draw_text("Press L for Leaderboard", 18, 420, (200, 200, 200)) 
     
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -102,27 +121,13 @@ while True:
         
         
     elif current_state == STATE_GAME:
-   
+        #game screen
         background.move()
         background.draw(screen)
         
         p1.move()
         for enemy in enemies:
             enemy.move(score)
-        
-       
-        if random.randint(1, 100) == 1:
-            choice = random.random()
-            if choice < 0.8: 
-                new_item = Coin("coin") 
-            elif choice < 0.9:
-                new_item = Coin("nitro")
-            else: 
-                new_item = Coin(random.choice(["shield", "repair"]))
-            coins.add(new_item)
-            all_sprites.add(new_item)
-        for c in coins:
-            c.move()
         
         if random.randint(1, 50) == 1:
             choice = random.random()
@@ -135,13 +140,18 @@ while True:
                 coins.add(new_bonus)
                 all_sprites.add(new_bonus)
             else: 
-              
                 new_obs = Obstacle(random.choice(["oil", "barrier", "pothole"]))
                 obstacles.add(new_obs)
                 all_sprites.add(new_obs)
+
+        for c in coins:
+            c.move()
+
         for obs in obstacles:
             obs.move(5)
         
+        global hp, active_pows
+        #intersect obst
         hit_obstacles = pygame.sprite.spritecollide(p1, obstacles, True)
         for obs in hit_obstacles:
             if obs.type == "oil":
@@ -150,27 +160,36 @@ while True:
                 if p1.shield:
                     p1.shield = False
                 else:
-                    p1.hp -= 1
+                    hp -= 1
 
+        if hp <= 0:
+            current_state = STATE_GAMEOVER
         
-
+        #intersect powerups and coins
         hit_items = pygame.sprite.spritecollide(p1, coins, True)
         for item in hit_items:
             if item.type == "coin":
                 score += item.weigh
             
             elif item.type == "nitro":
-                p1.nitro_frames = 180 
+                p1.speed += 5 
             
             elif item.type == "shield":
                 p1.shield = True 
+                new_effect = {
+                    "type": "shield", 
+                    "end_time": pygame.time.get_ticks() + 5000 
+                }
+                active_pows.append(new_effect)
+                for p in coins:
+                    if pygame.sprite.collide_rect(p1, p):
+                        p.kill()
                 
             elif item.type == "repair":
-                if p1.hp<3:
-                    p1.hp+=1
+                if hp<3:
+                    hp+=1
                 
-
-       
+       #intersect enemies 
         if pygame.sprite.spritecollideany(p1, enemies):
             if p1.shield:
                 p1.shield = False 
@@ -180,10 +199,13 @@ while True:
                 current_state = STATE_GAMEOVER
 
         
+        infoset(screen, hp, active_pows)
+
         for entity in all_sprites:
             screen.blit(entity.image, entity.rect)
 
     elif current_state == STATE_GAMEOVER:
+        #gameover screen
         if not saving_done:
             persistence.add_score(user_name, score)
             saving_done = True
@@ -194,6 +216,7 @@ while True:
         draw_text("Press R to Restart or M for Menu", 20, 400, (255, 255, 255))
         
         for event in pygame.event.get():
+            #through screens
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
                     reset_game()
@@ -204,12 +227,12 @@ while True:
                     saving_done = False
 
     elif current_state == STATE_LEADERBOARD:
+        #lb screen
         screen.fill((20, 20, 20)) 
         draw_text("TOP 10 RACERS", 40, 60, (255, 215, 0))
 
         scores = persistence.load_leaderboard()
         
-       
         y_offset = 130
         
         if not scores:
@@ -235,6 +258,7 @@ while True:
                     current_state = STATE_MENU
 
     elif current_state == STATE_SETTINGS:
+        #settings screen
         screen.fill((40, 40, 40)) 
         
         draw_text("SETTINGS", 40, 100, (255, 215, 0)) 

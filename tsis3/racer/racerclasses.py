@@ -39,12 +39,9 @@ class bg():
     
         self.y1 += self.speed
         self.y2 += self.speed
-        
-    
         if self.y1 >= self.rect.height:
             self.y1 = -self.rect.height
-            
-    
+        
         if self.y2 >= self.rect.height:
             self.y2 = -self.rect.height
 
@@ -101,8 +98,6 @@ class Obstacle(pygame.sprite.Sprite):
         self.type = obj_type
         
         self.image = pygame.image.load(f"racer/{obj_type}.png")
-        
-        
         self.image = pygame.transform.scale(self.image, (50, 50))
         self.rect = self.image.get_rect()
         

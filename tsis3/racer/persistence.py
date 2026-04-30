@@ -10,8 +10,7 @@ def load_settings():
     if os.path.exists(SETTINGS_FILE):
         with open(SETTINGS_FILE, "r") as f:
             return json.load(f)
-  
-    return {"sound": True, "car_color": "red", "difficulty": "Medium"}
+    return {"sound": True, "car_color": "blue", "difficulty": "Medium"}
 
 def save_settings(settings_dict):
     with open(SETTINGS_FILE, "w") as f:
@@ -22,7 +21,6 @@ def load_leaderboard():
         with open(LEADERBOARD_FILE, "r") as f:
             return json.load(f)
     return []
-
 
 def add_score(name, score):
     scores = load_leaderboard()
