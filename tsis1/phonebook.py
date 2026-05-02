@@ -12,7 +12,7 @@ def insert_contact_advanced(name, phone, email=None, birthday=None, group_name="
             with conn.cursor() as cur:
                 cur.execute(sql, (name, email, birthday))
                 contact_id = cur.fetchone()[0]
-                cur.execute("CALL add_phone(%s, %s, %s)", (name, phone, 'mobile'))
+                cur.execute("CALL add_phone(%s, %s, %s)", (contact_id, phone, 'mobile'))
                 cur.execute("CALL move_to_group(%s, %s)", (name, group_name))
                 conn.commit()
                 print(f"contact {name} added")
@@ -58,7 +58,7 @@ def get_paginated_list(limit, offset):
     except Exception as e:
         print(f"error with {e}")
         return []
-    
+     
 
 def run_pagination_menu():
     limit = 5
